@@ -109,163 +109,389 @@ const observer = new IntersectionObserver(
 );
 reveals.forEach(el => observer.observe(el));
 
-// Pixel Black Cat
+// Pixel Black Cat — interactive
 (function () {
   const canvas = document.getElementById('cat-canvas');
   if (!canvas) return;
   const ctx = canvas.getContext('2d');
-  const S = 3; // pixel scale
+  const S = 3;
+  const CW = 72, CH = 72;
 
   const BLACK = '#1a1a2e';
   const DARK = '#2a2a3e';
   const EYE = '#8ec8ff';
-  const EYE_BLINK = '#1a1a2e';
   const NOSE = '#e8a0bf';
+  const HEART = '#f28ba8';
+  const YARN = '#baddff';
+  const YARN2 = '#8ec8ff';
 
-  // Cat states: sit, lick, sleep, look
-  let state = 'sit';
+  // ── state machine ──
+  // states: idle, track, pet, jump, lonely, sleep
+  let state = 'idle';
   let frame = 0;
-  let stateTimer = 0;
+  let idleTimer = 0;
   let tailWag = 0;
   let blinking = false;
   let blinkTimer = 0;
+  let lastInteraction = Date.now();
+  const SLEEP_AFTER = 8000; // 8s no interaction → sleep
+
+  // mouse relative to cat container
+  let mouseNear = false;    // within ~120px of cat
+  let mouseOver = false;    // directly over cat canvas
+  let mouseOnHead = false;  // over head region specifically
+  let mouseRelX = 0;        // mouse x relative to cat center (for eye tracking)
+  let mouseRelY = 0;
+
+  // particles (hearts, yarn)
+  const particles = [];
+
+  // jump state
+  let jumpY = 0;
+  let jumpVel = 0;
+  let jumpCooldown = 0;
+
+  // lonely state
+  let lonelyTimer = 0;
+
+  // pet detection
+  let petStrokes = 0;
+  let lastPetX = -1;
+  let petCooldown = 0;
+
+  // ── mouse tracking ──
+  const catEl = canvas.parentElement;
+
+  function updateMouseState(e) {
+    const rect = catEl.getBoundingClientRect();
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top + rect.height / 2;
+    const dx = e.clientX - cx;
+    const dy = e.clientY - cy;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+
+    mouseRelX = dx;
+    mouseRelY = dy;
+
+    const wasNear = mouseNear;
+    mouseNear = dist < 120;
+    mouseOver = dist < 45;
+    mouseOnHead = mouseOver && (e.clientY - rect.top) < rect.height * 0.45;
+
+    if (mouseNear) {
+      lastInteraction = Date.now();
+
+      if (state === 'sleep') {
+        state = 'track';
+        idleTimer = 0;
+      }
+
+      if (state !== 'pet' && state !== 'jump' && state !== 'lonely') {
+        state = 'track';
+        idleTimer = 0;
+      }
+    }
+
+    if (!mouseNear && wasNear && state !== 'sleep' && state !== 'lonely') {
+      state = 'lonely';
+      lonelyTimer = 0;
+    }
+  }
+
+  document.addEventListener('mousemove', updateMouseState);
+
+  // pet = moving mouse back and forth over head
+  document.addEventListener('mousemove', (e) => {
+    if (!mouseOnHead || petCooldown > 0) return;
+    const rect = catEl.getBoundingClientRect();
+    const px = e.clientX - rect.left;
+    if (lastPetX >= 0 && Math.abs(px - lastPetX) > 6) {
+      petStrokes++;
+      if (petStrokes >= 3) {
+        state = 'pet';
+        idleTimer = 0;
+        petStrokes = 0;
+        petCooldown = 40;
+        lastInteraction = Date.now();
+      }
+    }
+    lastPetX = px;
+  });
+
+  // click to trigger jump
+  catEl.addEventListener('click', () => {
+    if (jumpCooldown <= 0 && state !== 'jump') {
+      state = 'jump';
+      jumpY = 0;
+      jumpVel = -3.5;
+      jumpCooldown = 90;
+      lastInteraction = Date.now();
+    }
+  });
+
+  // ── particles ──
+  function spawnHeart() {
+    particles.push({
+      type: 'heart',
+      x: 5 + Math.random() * 8,
+      y: -1,
+      life: 45,
+      maxLife: 45,
+      vx: (Math.random() - 0.5) * 0.3,
+      vy: -0.35,
+    });
+  }
+
+  function spawnYarn() {
+    particles.push({
+      type: 'yarn',
+      x: 5 + Math.random() * 4,
+      y: -2,
+      life: 50,
+      maxLife: 50,
+      vx: 0,
+      vy: -0.2,
+      rot: Math.random() * 6.28,
+    });
+  }
 
   function drawPixel(x, y, color) {
     ctx.fillStyle = color;
     ctx.fillRect(x * S, y * S, S, S);
   }
 
-  function drawCatBase() {
+  // ── cat drawing (offset by jumpY) ──
+  function drawCatBase(oy) {
     // Ears
-    drawPixel(3, 0, BLACK); drawPixel(4, 0, BLACK);
-    drawPixel(2, 1, BLACK); drawPixel(3, 1, DARK); drawPixel(4, 1, DARK);
-    drawPixel(9, 0, BLACK); drawPixel(10, 0, BLACK);
-    drawPixel(9, 1, DARK); drawPixel(10, 1, DARK); drawPixel(11, 1, BLACK);
-
+    drawPixel(3, 0+oy, BLACK); drawPixel(4, 0+oy, BLACK);
+    drawPixel(2, 1+oy, BLACK); drawPixel(3, 1+oy, DARK); drawPixel(4, 1+oy, DARK);
+    drawPixel(9, 0+oy, BLACK); drawPixel(10, 0+oy, BLACK);
+    drawPixel(9, 1+oy, DARK); drawPixel(10, 1+oy, DARK); drawPixel(11, 1+oy, BLACK);
     // Head
-    for (let x = 3; x <= 10; x++) drawPixel(x, 2, BLACK);
-    for (let x = 2; x <= 11; x++) drawPixel(x, 3, BLACK);
-    for (let x = 2; x <= 11; x++) drawPixel(x, 4, BLACK);
-    for (let x = 2; x <= 11; x++) drawPixel(x, 5, BLACK);
-    for (let x = 3; x <= 10; x++) drawPixel(x, 6, BLACK);
+    for (let x = 3; x <= 10; x++) drawPixel(x, 2+oy, BLACK);
+    for (let x = 2; x <= 11; x++) drawPixel(x, 3+oy, BLACK);
+    for (let x = 2; x <= 11; x++) drawPixel(x, 4+oy, BLACK);
+    for (let x = 2; x <= 11; x++) drawPixel(x, 5+oy, BLACK);
+    for (let x = 3; x <= 10; x++) drawPixel(x, 6+oy, BLACK);
   }
 
-  function drawEyes(blink) {
+  function drawBody(oy) {
+    for (let x = 3; x <= 10; x++) drawPixel(x, 7+oy, BLACK);
+    for (let x = 2; x <= 11; x++) drawPixel(x, 8+oy, BLACK);
+    for (let x = 2; x <= 11; x++) drawPixel(x, 9+oy, BLACK);
+    for (let x = 2; x <= 11; x++) drawPixel(x, 10+oy, BLACK);
+    for (let x = 2; x <= 11; x++) drawPixel(x, 11+oy, BLACK);
+    drawPixel(2, 12+oy, DARK); drawPixel(3, 12+oy, DARK); drawPixel(4, 12+oy, DARK);
+    drawPixel(9, 12+oy, DARK); drawPixel(10, 12+oy, DARK); drawPixel(11, 12+oy, DARK);
+  }
+
+  function drawTail(oy, wag) {
+    const offY = Math.round(Math.sin(wag));
+    drawPixel(12, 10+oy+offY, BLACK);
+    drawPixel(13, 9+oy+offY, BLACK);
+    drawPixel(14, 8+oy+offY, BLACK);
+    drawPixel(15, 8+oy+offY, DARK);
+  }
+
+  // eyes that track mouse direction
+  function drawTrackingEyes(oy) {
+    let ex = 0, ey = 0;
+    if (Math.abs(mouseRelX) > 10) ex = mouseRelX > 0 ? 1 : -1;
+    if (Math.abs(mouseRelY) > 10) ey = mouseRelY > 0 ? 1 : 0;
+    const lx = 4 + ex, rx = 8 + ex;
+    const ty = 3 + ey;
+    drawPixel(lx, ty+oy, EYE); drawPixel(lx+1, ty+oy, EYE);
+    drawPixel(lx, ty+1+oy, EYE); drawPixel(lx+1, ty+1+oy, EYE);
+    drawPixel(rx, ty+oy, EYE); drawPixel(rx+1, ty+oy, EYE);
+    drawPixel(rx, ty+1+oy, EYE); drawPixel(rx+1, ty+1+oy, EYE);
+    drawPixel(6, 5+oy, NOSE); drawPixel(7, 5+oy, NOSE);
+  }
+
+  function drawNormalEyes(oy, blink) {
     if (blink) {
-      drawPixel(4, 4, EYE_BLINK); drawPixel(5, 4, EYE_BLINK);
-      drawPixel(8, 4, EYE_BLINK); drawPixel(9, 4, EYE_BLINK);
+      drawPixel(4, 4+oy, DARK); drawPixel(5, 4+oy, DARK);
+      drawPixel(8, 4+oy, DARK); drawPixel(9, 4+oy, DARK);
     } else {
-      drawPixel(4, 3, EYE); drawPixel(5, 3, EYE);
-      drawPixel(4, 4, EYE); drawPixel(5, 4, EYE);
-      drawPixel(8, 3, EYE); drawPixel(9, 3, EYE);
-      drawPixel(8, 4, EYE); drawPixel(9, 4, EYE);
+      drawPixel(4, 3+oy, EYE); drawPixel(5, 3+oy, EYE);
+      drawPixel(4, 4+oy, EYE); drawPixel(5, 4+oy, EYE);
+      drawPixel(8, 3+oy, EYE); drawPixel(9, 3+oy, EYE);
+      drawPixel(8, 4+oy, EYE); drawPixel(9, 4+oy, EYE);
     }
-    // Nose
-    drawPixel(6, 5, NOSE); drawPixel(7, 5, NOSE);
+    drawPixel(6, 5+oy, NOSE); drawPixel(7, 5+oy, NOSE);
   }
 
-  function drawSitBody() {
-    // Body
-    for (let x = 3; x <= 10; x++) drawPixel(x, 7, BLACK);
-    for (let x = 2; x <= 11; x++) drawPixel(x, 8, BLACK);
-    for (let x = 2; x <= 11; x++) drawPixel(x, 9, BLACK);
-    for (let x = 2; x <= 11; x++) drawPixel(x, 10, BLACK);
-    for (let x = 2; x <= 11; x++) drawPixel(x, 11, BLACK);
-    // Paws
-    drawPixel(2, 12, DARK); drawPixel(3, 12, DARK); drawPixel(4, 12, DARK);
-    drawPixel(9, 12, DARK); drawPixel(10, 12, DARK); drawPixel(11, 12, DARK);
+  function drawHappyEyes(oy) {
+    // ^_^ squint
+    drawPixel(4, 3+oy, EYE); drawPixel(5, 3+oy, EYE);
+    drawPixel(3, 4+oy, EYE); drawPixel(6, 4+oy, EYE);
+    drawPixel(8, 3+oy, EYE); drawPixel(9, 3+oy, EYE);
+    drawPixel(7, 4+oy, EYE); drawPixel(10, 4+oy, EYE);
+    drawPixel(6, 5+oy, NOSE); drawPixel(7, 5+oy, NOSE);
   }
 
-  function drawTail(wag) {
-    const offY = Math.round(Math.sin(wag) * 1);
-    drawPixel(12, 10 + offY, BLACK);
-    drawPixel(13, 9 + offY, BLACK);
-    drawPixel(14, 8 + offY, BLACK);
-    drawPixel(15, 8 + offY, DARK);
-  }
-
-  function drawSleepEyes() {
-    // Closed eyes as dashes
-    drawPixel(4, 4, DARK); drawPixel(5, 4, DARK);
-    drawPixel(8, 4, DARK); drawPixel(9, 4, DARK);
-    drawPixel(6, 5, NOSE); drawPixel(7, 5, NOSE);
+  function drawSleepEyes(oy) {
+    drawPixel(4, 4+oy, DARK); drawPixel(5, 4+oy, DARK);
+    drawPixel(8, 4+oy, DARK); drawPixel(9, 4+oy, DARK);
+    drawPixel(6, 5+oy, NOSE); drawPixel(7, 5+oy, NOSE);
   }
 
   function drawZzz(f) {
-    const offset = Math.floor(f / 8) % 3;
-    const alpha = ((f % 8) / 8);
+    const offset = Math.floor(f / 10) % 3;
+    const alpha = ((f % 10) / 10);
     ctx.fillStyle = `rgba(142, 200, 255, ${0.3 + alpha * 0.5})`;
     ctx.font = `${7 + offset}px 'Press Start 2P', monospace`;
-    ctx.fillText('z', (13 - offset) * S, (2 + offset * 2) * S);
+    ctx.fillText('z', (14 - offset) * S, (3 + offset * 2) * S);
   }
 
-  function drawLick(f) {
-    const tongueOut = Math.floor(f / 6) % 2 === 0;
-    drawPixel(6, 5, NOSE); drawPixel(7, 5, NOSE);
-    if (tongueOut) {
-      drawPixel(6, 6, NOSE); drawPixel(7, 6, NOSE);
-    }
+  // draw pixel heart
+  function drawHeart(px, py, alpha) {
+    ctx.globalAlpha = alpha;
+    const c = HEART;
+    // tiny 5x4 pixel heart
+    drawPixel(Math.round(px), Math.round(py), c);
+    drawPixel(Math.round(px)+2, Math.round(py), c);
+    drawPixel(Math.round(px)-1, Math.round(py)+1, c);
+    drawPixel(Math.round(px), Math.round(py)+1, c);
+    drawPixel(Math.round(px)+1, Math.round(py)+1, c);
+    drawPixel(Math.round(px)+2, Math.round(py)+1, c);
+    drawPixel(Math.round(px)+3, Math.round(py)+1, c);
+    drawPixel(Math.round(px), Math.round(py)+2, c);
+    drawPixel(Math.round(px)+1, Math.round(py)+2, c);
+    drawPixel(Math.round(px)+2, Math.round(py)+2, c);
+    drawPixel(Math.round(px)+1, Math.round(py)+3, c);
+    ctx.globalAlpha = 1;
   }
 
-  function drawLookEyes(f) {
-    const lookRight = Math.floor(f / 12) % 2 === 0;
-    if (lookRight) {
-      drawPixel(5, 3, EYE); drawPixel(5, 4, EYE);
-      drawPixel(9, 3, EYE); drawPixel(9, 4, EYE);
-    } else {
-      drawPixel(4, 3, EYE); drawPixel(4, 4, EYE);
-      drawPixel(8, 3, EYE); drawPixel(8, 4, EYE);
-    }
-    drawPixel(6, 5, NOSE); drawPixel(7, 5, NOSE);
+  // draw pixel yarn ball
+  function drawYarnBall(px, py, alpha, rot) {
+    ctx.globalAlpha = alpha;
+    const cx = Math.round(px), cy = Math.round(py);
+    // small 3x3 ball
+    drawPixel(cx, cy, YARN); drawPixel(cx+1, cy, YARN2); drawPixel(cx+2, cy, YARN);
+    drawPixel(cx, cy+1, YARN2); drawPixel(cx+1, cy+1, YARN); drawPixel(cx+2, cy+1, YARN2);
+    drawPixel(cx, cy+2, YARN); drawPixel(cx+1, cy+2, YARN2); drawPixel(cx+2, cy+2, YARN);
+    // trailing string
+    const sx = cx + 2 + Math.round(Math.sin(rot) * 1.5);
+    const sy = cy + 2 + Math.round(Math.cos(rot) * 0.8);
+    drawPixel(sx, sy, YARN2);
+    drawPixel(sx + 1, sy + 1, YARN);
+    ctx.globalAlpha = 1;
   }
 
+  // ── main render loop ──
   function render() {
-    ctx.clearRect(0, 0, 48, 48);
-    drawCatBase();
-    drawSitBody();
-    tailWag += 0.15;
-    drawTail(tailWag);
-
-    // Blink cycle
-    blinkTimer++;
-    if (blinkTimer > 60 && !blinking) {
-      blinking = true;
-      blinkTimer = 0;
-    }
-    if (blinking && blinkTimer > 4) {
-      blinking = false;
-      blinkTimer = 0;
-    }
-
-    if (state === 'sit') {
-      drawEyes(blinking);
-    } else if (state === 'sleep') {
-      drawSleepEyes();
-      drawZzz(frame);
-    } else if (state === 'lick') {
-      drawEyes(false);
-      drawLick(frame);
-    } else if (state === 'look') {
-      drawLookEyes(frame);
-    }
-
+    ctx.clearRect(0, 0, CW, CH);
     frame++;
-    stateTimer++;
+    tailWag += (state === 'pet' || state === 'track') ? 0.3 : 0.12;
 
-    if (stateTimer > 180) {
-      stateTimer = 0;
-      const states = ['sit', 'sleep', 'lick', 'look', 'sit', 'sit'];
-      state = states[Math.floor(Math.random() * states.length)];
+    // blink cycle (for idle)
+    blinkTimer++;
+    if (blinkTimer > 70 && !blinking) { blinking = true; blinkTimer = 0; }
+    if (blinking && blinkTimer > 4) { blinking = false; blinkTimer = 0; }
+
+    // cooldowns
+    if (jumpCooldown > 0) jumpCooldown--;
+    if (petCooldown > 0) petCooldown--;
+
+    // auto-sleep after inactivity
+    if (Date.now() - lastInteraction > SLEEP_AFTER && state !== 'sleep' && state !== 'lonely') {
+      state = 'sleep';
+      idleTimer = 0;
+    }
+
+    // jump physics
+    if (state === 'jump') {
+      jumpVel += 0.25;
+      jumpY += jumpVel;
+      if (jumpY >= 0) {
+        jumpY = 0;
+        jumpVel = 0;
+        state = mouseNear ? 'track' : 'idle';
+      }
+    }
+
+    const oy = Math.round(jumpY) + 6; // +6 vertical offset so particles have room above
+
+    // draw cat
+    drawCatBase(oy);
+    drawBody(oy);
+    drawTail(oy, tailWag);
+
+    // state-specific eyes & effects
+    switch (state) {
+      case 'idle':
+        drawNormalEyes(oy, blinking);
+        idleTimer++;
+        if (idleTimer > 200) {
+          state = 'sleep';
+          idleTimer = 0;
+        }
+        break;
+
+      case 'track':
+        drawTrackingEyes(oy);
+        // occasionally jump toward mouse
+        if (jumpCooldown <= 0 && mouseNear && !mouseOver && Math.random() < 0.004) {
+          state = 'jump';
+          jumpY = 0;
+          jumpVel = -3;
+          jumpCooldown = 120;
+        }
+        break;
+
+      case 'pet':
+        drawHappyEyes(oy);
+        // spawn hearts randomly
+        if (Math.random() < 0.12) spawnHeart();
+        idleTimer++;
+        if (idleTimer > 60) {
+          state = mouseNear ? 'track' : 'idle';
+          idleTimer = 0;
+        }
+        break;
+
+      case 'jump':
+        drawTrackingEyes(oy);
+        break;
+
+      case 'lonely':
+        drawSleepEyes(oy);
+        lonelyTimer++;
+        if (lonelyTimer === 1) spawnYarn();
+        if (lonelyTimer > 70) {
+          state = 'idle';
+          idleTimer = 0;
+        }
+        if (mouseNear) {
+          state = 'track';
+          idleTimer = 0;
+        }
+        break;
+
+      case 'sleep':
+        drawSleepEyes(oy);
+        drawZzz(frame);
+        break;
+    }
+
+    // update & draw particles
+    for (let i = particles.length - 1; i >= 0; i--) {
+      const p = particles[i];
+      p.x += p.vx;
+      p.y += p.vy;
+      p.life--;
+      const alpha = Math.max(0, p.life / p.maxLife);
+      if (p.type === 'heart') {
+        drawHeart(p.x, p.y, alpha);
+      } else if (p.type === 'yarn') {
+        p.rot += 0.08;
+        drawYarnBall(p.x, p.y, alpha, p.rot);
+      }
+      if (p.life <= 0) particles.splice(i, 1);
     }
 
     requestAnimationFrame(render);
   }
-
-  // Click on cat to wake it up
-  canvas.parentElement.addEventListener('click', () => {
-    state = 'look';
-    stateTimer = 0;
-  });
 
   render();
 })();

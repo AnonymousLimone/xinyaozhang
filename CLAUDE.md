@@ -22,7 +22,13 @@ Personal academic website for a behavioral scientist. Hosted on GitHub Pages, au
   - Monospace/labels: `IBM Plex Mono`
 - **Pixel elements:** pixel-border buttons with box-shadow offsets, pixel rain canvas background, pixel-art custom cursor (arrow + pointer hand)
 - **Interactive details:**
-  - Black pixel cat in bottom-right corner (canvas-drawn) — idle states: sit, sleep (with floating "z"), lick, look around. Tail wags, eyes blink. Clickable to trigger "look" state.
+  - Black pixel cat in bottom-right corner (72x72 canvas). Full mouse interaction system:
+    - **Track:** when mouse approaches (~120px), cat's eyes follow the cursor. Occasionally jumps toward mouse.
+    - **Pet:** move mouse back and forth over cat's head area → cat shows happy squint eyes (^_^) and spawns floating pixel hearts.
+    - **Jump:** click the cat → it jumps up toward cursor. Has cooldown between jumps.
+    - **Lonely:** when mouse leaves the cat's area, a pixel yarn ball floats above its head (brief sad state).
+    - **Sleep:** after 8 seconds of no interaction, cat falls asleep with floating "z" particles. Wakes when mouse approaches.
+    - Tail wags faster during active interactions (track/pet). Eyes blink periodically in idle.
   - Avatar smiley block bounces on page load with expression cycle (:/ → :| → :) → :D → :)), wiggles on hover
   - Emojis (course icons, nav logo, footer stars) bounce on hover
   - Scroll-reveal animations on content sections
