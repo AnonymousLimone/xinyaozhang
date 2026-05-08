@@ -8,16 +8,26 @@
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><text y='14' font-size='14'>🫐</text></svg>">
 </head>
 <body>
+  <!-- LOADING BAR -->
+  <div id="loader-overlay">
+    <div class="loader-box">
+      <span class="loader-label">loading...</span>
+      <div class="loader-track">
+        <div class="loader-bar"></div>
+      </div>
+    </div>
+  </div>
+
   <canvas id="pixel-rain"></canvas>
 
   <nav id="navbar">
     <div class="nav-inner">
       <a href="#" class="nav-logo">🫐 crazyblueberri</a>
       <div class="nav-links">
-        <a href="#about">about</a>
-        <a href="#publications">publications</a>
-        <a href="#teaching">teaching</a>
-        <a href="#cv">cv</a>
+        <a href="#about">About</a>
+        <a href="#publications">Publications</a>
+        <a href="#teaching">Teaching</a>
+        <a href="#cv">CV</a>
       </div>
       <button class="nav-toggle" aria-label="menu">☰</button>
     </div>
@@ -33,7 +43,7 @@
           </div>
         </div>
         <h1 class="glitch-text">crazyblueberri</h1>
-        <p class="subtitle">lorem ipsum · dolor sit amet · consectetur adipiscing · elit sed do</p>
+        <p class="subtitle">Lorem Ipsum · Dolor Sit Amet · Consectetur Adipiscing · Elit Sed Do</p>
         <div class="hero-decoration">
           <span class="pixel-star">✦</span>
           <span class="pixel-star">✦</span>
@@ -45,7 +55,7 @@
     <!-- ABOUT -->
     <section id="about">
       <div class="container">
-        <h2 class="section-title"><span class="pixel-bracket">[</span> about <span class="pixel-bracket">]</span></h2>
+        <h2 class="section-title"><span class="pixel-bracket">[</span> About <span class="pixel-bracket">]</span></h2>
         <div class="about-content">
           <div class="about-text">
             <p>
@@ -63,22 +73,12 @@
               nisi ut aliquid ex ea commodi consequatur.
             </p>
             <div class="about-links">
-              <a href="mailto:your@email.com" class="pixel-btn">✉ email</a>
+              <a href="mailto:your@email.com" class="pixel-btn">✉ Email</a>
             </div>
           </div>
-          <div class="about-decoration">
+          <div class="about-photo">
             <div class="pixel-frame">
-              <div class="brain-pixel-art">
-                <pre>
-    ╭─────────╮
-   ╱ ·  ·  ·  ╲
-  │  ◠  ◡  ◠   │
-  │   ·  ·  ·  │
-   ╲  ◡  ◠  ◡ ╱
-    ╰─────────╯
-      │ │ │
-                </pre>
-              </div>
+              <img src="photo.jpg" alt="profile photo" class="photo-pixelated">
             </div>
           </div>
         </div>
@@ -88,11 +88,11 @@
     <!-- PUBLICATIONS -->
     <section id="publications">
       <div class="container">
-        <h2 class="section-title"><span class="pixel-bracket">[</span> publications <span class="pixel-bracket">]</span></h2>
+        <h2 class="section-title"><span class="pixel-bracket">[</span> Publications <span class="pixel-bracket">]</span></h2>
 
         <div class="pub-tabs">
-          <button class="pub-tab active" data-tab="journal">journal articles</button>
-          <button class="pub-tab" data-tab="conference">conference papers</button>
+          <button class="pub-tab active" data-tab="journal">Journal Articles</button>
+          <button class="pub-tab" data-tab="conference">Conference Papers</button>
         </div>
 
         <div class="pub-panel active" id="tab-journal">
@@ -154,7 +154,7 @@
     <!-- TEACHING -->
     <section id="teaching">
       <div class="container">
-        <h2 class="section-title"><span class="pixel-bracket">[</span> teaching <span class="pixel-bracket">]</span></h2>
+        <h2 class="section-title"><span class="pixel-bracket">[</span> Teaching <span class="pixel-bracket">]</span></h2>
         <div class="teaching-grid">
           <div class="course-card">
             <div class="course-icon">📡</div>
@@ -181,14 +181,14 @@
     <!-- CV -->
     <section id="cv">
       <div class="container">
-        <h2 class="section-title"><span class="pixel-bracket">[</span> cv <span class="pixel-bracket">]</span></h2>
+        <h2 class="section-title"><span class="pixel-bracket">[</span> CV <span class="pixel-bracket">]</span></h2>
         <div class="cv-content">
           <p>Curriculum vitae integrum infra praesto est.</p>
-          <a href="cv.pdf" class="pixel-btn cv-download" target="_blank">⬇ download cv (pdf)</a>
+          <a href="cv.pdf" class="pixel-btn cv-download" target="_blank">⬇ Download CV (PDF)</a>
 
           <div class="cv-summary">
             <div class="cv-block">
-              <h3>education</h3>
+              <h3>Education</h3>
               <div class="cv-entry">
                 <span class="cv-date">20XX –</span>
                 <span class="cv-detail">Ph.D. in Lorem Ipsum, Universitas Dolor</span>
@@ -203,7 +203,7 @@
               </div>
             </div>
             <div class="cv-block">
-              <h3>methods</h3>
+              <h3>Methods</h3>
               <div class="cv-tags">
                 <span class="cv-tag">lorem</span>
                 <span class="cv-tag">ipsum</span>
@@ -232,7 +232,7 @@
 
   <!-- Pixel Black Cat -->
   <div id="pixel-cat" title="meow~">
-    <canvas id="cat-canvas" width="72" height="72"></canvas>
+    <canvas id="cat-canvas" width="72" height="96"></canvas>
   </div>
 
   <script src="script.js"></script>
