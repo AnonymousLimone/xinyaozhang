@@ -306,19 +306,7 @@ body {
   letter-spacing: 6px;
 }
 
-/* Desktop hover — no-touch devices only */
-@media (hover: hover) {
-  .glitch-text:hover .name-en {
-    opacity: 0;
-    transform: translateY(-4px);
-  }
-  .glitch-text:hover .name-zh {
-    opacity: 1;
-    transform: translateX(-50%) translateY(0);
-  }
-}
-
-/* JS click toggle — works on all devices */
+/* Click toggle — works on all devices */
 .glitch-text.show-zh .name-en {
   opacity: 0;
   transform: translateY(-4px);
@@ -370,12 +358,6 @@ body {
   font-weight: 300;
 }
 
-.hint-tap { display: none; }
-
-@media (hover: none) {
-  .hint-hover { display: none; }
-  .hint-tap { display: inline; }
-}
 
 /* SECTIONS */
 section {
