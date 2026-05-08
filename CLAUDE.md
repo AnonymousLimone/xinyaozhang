@@ -21,6 +21,7 @@ Personal academic website for Xinyao Zhang. Hosted on GitHub Pages, auto-deploys
   - Headings/decorative: `Press Start 2P` (pixel font)
   - Body text: `IBM Plex Sans` (16px base)
   - Monospace/labels: `IBM Plex Mono`
+  - Chinese name: `Noto Sans SC` (rounded gothic)
 - **Pixel elements:** pixel-border buttons with box-shadow offsets, pixel rain canvas background, pixel-art custom cursor (arrow + pointer hand)
 - **Interactive details:**
   - Black pixel cat in bottom-right corner (72x96 canvas). Full mouse interaction system:
@@ -35,7 +36,7 @@ Personal academic website for Xinyao Zhang. Hosted on GitHub Pages, auto-deploys
   - Scroll-reveal animations on content sections
   - **Seasonal pixel rain** — background particles change by month: spring (Mar–May) = pink cherry blossom petals, summer (Jun–Aug) = blue pixels, autumn (Sep–Nov) = amber leaves, winter (Dec–Feb) = white snowflakes
   - **Pixel butterfly** — appears every ~25–40s, floats across the screen on a sine wave. Color matches the season. Cat's eyes follow it when nearby (<300px).
-  - **Konami code** (↑↑↓↓←←→→) — triggers a 5-second Game Boy green color palette swap. Cat wears a party hat and dances (bouncing animation + happy eyes + hearts).
+  - **Konami code** (↑↑↓↓←→←→BA) — triggers a 5-second Game Boy green color palette swap. Cat wears a party hat and dances (bouncing animation + happy eyes + hearts). Footer has a subtle hint "psst... try the konami code".
   - **Logo blueberry bounce** — clicking the 🫐 nav logo drops a blueberry emoji that bounces with gravity physics, then fades out. Also scrolls to top.
   - **Day/night auto mode** — checks the hour on page load. Between 8pm and 7am, applies `.night-mode` class which overrides CSS variables to a dark navy palette. Cat defaults to sleep state at night.
   - Navbar blur + shadow on scroll
@@ -59,12 +60,12 @@ xinyaozhang/                    (local dir still named crazyblueberri)
 
 ## Page Sections (in order)
 
-1. **Hero** (`#hero`) — pixel avatar with animated face, "Xinyao Zhang" in pixel font, subtitle with research keywords, twinkling stars
-2. **About** (`#about`) — bio text, email + Bluesky links, pixelated profile photo on the right (visible on mobile too)
+1. **Hero** (`#hero`) — pixel avatar with animated face, "Xinyao Zhang" in pixel font (click to toggle Chinese name 张心瑶 in Noto Sans SC), subtitle with research keywords, twinkling stars, subtle hint "click my name for 中文"
+2. **About** (`#about`) — bio text, email + Bluesky links, profile photo on the right (visible on mobile too)
 3. **Publications** (`#publications`) — tabbed: Conferences / Workshops. Journal articles tab removed (all currently in review). Entries organized by year, Zhang X. bolded.
 4. **Teaching** (`#teaching`) — 3-column card grid: Communication Research 1 (📊), Persuasive Communication (📢), Graduation Project (🎓). Ordered newest first. Student evaluations shown.
 5. **CV** (`#cv`) — marked "under construction". Education timeline (PhD, Research MSc, double BA), skills tags, languages tags.
-6. **Footer** — one-liner "built with pixels & curiosity"
+6. **Footer** — "built with pixels & curiosity · powered by Claude Code" + Konami hint
 
 ## Current State
 
