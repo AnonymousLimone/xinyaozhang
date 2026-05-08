@@ -9,7 +9,7 @@ Personal academic website for Xinyao Zhang. Hosted on GitHub Pages, auto-deploys
 
 - Xinyao Zhang — Ph.D. student in Communication Science, University of Amsterdam
 - Research areas: communication neuroscience, political neuroscience, social media, behavioral science
-- Personality: Enneagram 5w4 — intellectual, introspective, creative but understated
+- Personality: Enneagram 5w4
 - Prefers things that are not flashy/formal, but also not too loud
 - Likes black cats
 
@@ -89,10 +89,9 @@ xinyaozhang/                    (local dir still named crazyblueberri)
 
 ## Notes for Future Sessions
 
-- Owner does not write code — all code changes go through Claude
+- All code changes go through Claude
 - Owner prefers minimal permission confirmations
 - Keep the understated pixel-art + light anime vibe consistent with any new features
 - Owner's writing tone is casual-academic — correct grammar but don't make it sound overly formal
 - When adding journal articles later, re-add a "Journal Articles" tab to publications
 - When content changes, update sitemap.xml `<lastmod>` date
-- Owner should submit site to Google Search Console for faster indexing
